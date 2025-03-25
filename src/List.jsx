@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { deleteTodo, updateTodo } from "./services/allApi";
 import { ToastContainer, toast } from "react-toastify";
 
 function List({ displayTodo, getTodo }) {
+  const [todoStatus, setTodoStatus] = useState("pending");
+
   const handleDelete = async (id) => {
     const result = await deleteTodo(id);
     console.log("delete response", result);
@@ -15,12 +17,20 @@ function List({ displayTodo, getTodo }) {
   };
 
   const updateTodoStatus = async (id) => {
-    const response = await updateTodo(id, { status: "done" });
+    const currentStatus = displayTodo.status;
+    const newStatus = currentStatus === "pending" ? "done" : "pending";
+    const response = await updateTodo(id, { status: newStatus });
     console.log("status updated");
     console.log(displayTodo);
     if (response.status === 200) {
-      toast.success("Successfully done the Todo");
+      toast.success(
+        newStatus === "done"
+          ? "Successfully Marked As Done Todo"
+          : "undone the Todo"
+      );
+      setTodoStatus(newStatus);
       getTodo();
+      console.log("status:", newStatus);
     } else {
       toast.danger("something went wrong");
     }
@@ -46,9 +56,8 @@ function List({ displayTodo, getTodo }) {
           <button
             className="btn btn-info me-2"
             onClick={() => updateTodoStatus(displayTodo.id)}
-            disabled={displayTodo.status === "done"}
           >
-            <i class="fa-solid fa-check"></i>
+            {todoStatus === "pending" ? "Mark as Done" : "undo"}
           </button>
           <button
             className="btn btn-danger"
